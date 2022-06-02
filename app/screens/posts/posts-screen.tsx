@@ -1,8 +1,8 @@
-import React, { useEffect, FC } from "react"
-import { TextStyle, View, ViewStyle } from "react-native"
+import React, { useEffect, FC, useCallback } from "react"
+import { TextStyle, View, ViewStyle, FlatList } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack"
 import { observer } from "mobx-react-lite"
-import { Header, Screen, GradientBackground, Table } from "../../components"
+import { Header, Screen, GradientBackground,Text, PostCard } from "../../components"
 import { color, spacing } from "../../theme"
 import { Post, useStores } from "../../models"
 import { NavigatorParamList } from "../../navigators"
@@ -26,27 +26,32 @@ const HEADER_TITLE: TextStyle = {
   lineHeight: 15,
   textAlign: "center",
 }
+const PAGINATION_ROOT: ViewStyle = {
+  padding: 10
+}
 
 export const PostsScreen: FC<StackScreenProps<NavigatorParamList, "postScreen">> = observer(
   ({ navigation }) => {
-
+    const [page, setPage]= React.useState(1);
     const { postStore } = useStores()
     const { posts } = postStore
-
+    const to = Math.min((page + 1) * 5, posts.length);
     useEffect(() => {
       async function fetchData(page) {
        const {page: currentPage, nbPages, status} = await postStore.getPosts(page)
-       console.log({page, status, currentPage, nbPages}, posts.length)
        if(status && nbPages > page){
         setTimeout(fetchData, 10000, currentPage + 1)
        }
       }
       fetchData(0)
     }, [])
-    const handleDetails =(data: Post)=>{
+    const handleDetails =  useCallback((data: Post)=>{
       navigation.navigate("postDetailsScreen", { data })
+    }, [])
+    const handleLoadMore = () => {
+      const nextPage =  Math.min((page + 1) * 5, posts.length)
+      if(nextPage <= posts.length) setPage( page + 1)
     }
-    console.log(posts.length)
     return (
       <View testID="postsScreen" style={FULL}>
         <GradientBackground colors={["#422443", "#281b34"]} />
@@ -56,7 +61,18 @@ export const PostsScreen: FC<StackScreenProps<NavigatorParamList, "postScreen">>
             style={HEADER}
             titleStyle={HEADER_TITLE}
           />
-          <Table 
+          <View style={PAGINATION_ROOT}>
+            <Text style={HEADER_TITLE}>1-{to} of {posts.length}</Text>
+          </View>
+          <FlatList 
+            // onEndReachedThreshold={0.5}
+            onEndReached={handleLoadMore}
+            keyExtractor={(_, index) => String(index)}
+            data={posts.slice(0, to)}
+            renderItem={({item, index})=> <PostCard index={index} onDetails={handleDetails} data={item} /> }
+          />
+          
+          {/* <Table 
             onDetails={handleDetails}
             tableData={posts} 
             tableHead={[
@@ -65,7 +81,7 @@ export const PostsScreen: FC<StackScreenProps<NavigatorParamList, "postScreen">>
               "Url",
               "Created At", 
             ]}
-          />
+          /> */}
         </Screen>
       </View>
     )
