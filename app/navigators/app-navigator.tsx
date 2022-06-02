@@ -8,8 +8,9 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { WelcomeScreen, DemoScreen, DemoListScreen } from "../screens"
+import { PostDetailsScreen, PostsScreen } from "../screens"
 import { navigationRef, useBackButtonHandler } from "./navigation-utilities"
+import { Post } from "../models"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -24,10 +25,11 @@ import { navigationRef, useBackButtonHandler } from "./navigation-utilities"
  *   https://reactnavigation.org/docs/typescript#type-checking-the-navigator
  */
 export type NavigatorParamList = {
-  welcome: undefined
-  demo: undefined
-  demoList: undefined
   // 🔥 Your screens go here
+  postScreen: undefined
+  postDetailsScreen: {
+    data: Post
+  }
 }
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
@@ -39,12 +41,11 @@ const AppStack = () => {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="welcome"
+      initialRouteName="postScreen"
     >
-      <Stack.Screen name="welcome" component={WelcomeScreen} />
-      <Stack.Screen name="demo" component={DemoScreen} />
-      <Stack.Screen name="demoList" component={DemoListScreen} />
       {/** 🔥 Your screens go here */}
+      <Stack.Screen name="postScreen" component={PostsScreen} />
+      <Stack.Screen name="postDetailsScreen" component={PostDetailsScreen} />
     </Stack.Navigator>
   )
 }

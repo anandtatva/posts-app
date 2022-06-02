@@ -1,6 +1,0 @@
-module Pods_posts {
-  umbrella header "Pods-posts-umbrella.h"
-
-  export *
-  module * { export * }
-}
